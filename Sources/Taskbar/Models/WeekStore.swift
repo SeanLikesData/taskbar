@@ -61,6 +61,8 @@ final class WeekStore: ObservableObject {
     private var lastSelection: [Region: UUID] = [:]
     /// The column to drop back into when leaving the day tabs with Down.
     private var returnColumn: Region = .tasks
+    /// The habit last focused, so returning to the habits row restores it.
+    private var lastHabitID: UUID?
 
     /// Closure the AppDelegate sets so Escape can close the popover.
     var onRequestClose: (() -> Void)?
@@ -530,34 +532,94 @@ final class WeekStore: ObservableObject {
         selectedID = orderedIDs(for: .thisWeek).first
     }
 
+    /// Habit and task ids for the active day, kept separate because the habits
+    /// form one horizontal row at the top of the Tasks column.
+    var activeDayHabitIDs: [UUID] { currentWeek?.day(activeDay).habits.map { $0.id } ?? [] }
+    var activeDayTaskIDs: [UUID] { currentWeek?.day(activeDay).tasks.map { $0.id } ?? [] }
+
     /// Up/Down. Within a column, move the selection one row. Pressing Up at the
     /// top of a column jumps to the day tabs; pressing Down on the day tabs
-    /// drops back into the column you came from.
+    /// drops back into the column you came from. In the Tasks column the whole
+    /// habits row is a single vertical stop (move between habits with Left/Right).
     func navigateVertical(up: Bool) {
         switch region {
         case .dayTabs:
             if !up { returnFromDayTabs() }
-        case .thisWeek, .tasks:
-            let order = orderedIDs(for: region)
-            guard !order.isEmpty else {
-                if up { goToDayTabs(from: region) }
-                return
-            }
-            guard let current = selectedID, let idx = order.firstIndex(of: current) else {
-                selectedID = order.first
-                return
-            }
-            let next = up ? idx - 1 : idx + 1
-            if order.indices.contains(next) {
-                selectedID = order[next]
-            } else if up {
-                goToDayTabs(from: region)
-            }
+        case .thisWeek:
+            stepWithinList(up: up, order: orderedIDs(for: .thisWeek))
+        case .tasks:
+            navigateTasksVertical(up: up)
         }
     }
 
-    /// Left/Right. In a column, move between the This Week and Tasks columns. On
-    /// the day tabs, switch the active day.
+    private func stepWithinList(up: Bool, order: [UUID]) {
+        guard !order.isEmpty else {
+            if up { goToDayTabs(from: region) }
+            return
+        }
+        guard let current = selectedID, let idx = order.firstIndex(of: current) else {
+            selectedID = order.first
+            return
+        }
+        let next = up ? idx - 1 : idx + 1
+        if order.indices.contains(next) {
+            selectedID = order[next]
+        } else if up {
+            goToDayTabs(from: region)
+        }
+    }
+
+    private func navigateTasksVertical(up: Bool) {
+        let habits = activeDayHabitIDs
+        let tasks = activeDayTaskIDs
+        let onHabitRow = selectedID.map { habits.contains($0) } ?? false
+
+        if onHabitRow {
+            if up {
+                goToDayTabs(from: .tasks)
+            } else if let firstTask = tasks.first {
+                selectedID = firstTask
+            }
+            return
+        }
+
+        // Otherwise the focus is on a task row (or nothing yet).
+        guard let current = selectedID, let idx = tasks.firstIndex(of: current) else {
+            if let firstTask = tasks.first {
+                selectedID = firstTask
+            } else if up {
+                enterHabitRowOrTabs(habits)
+            }
+            return
+        }
+        let next = up ? idx - 1 : idx + 1
+        if tasks.indices.contains(next) {
+            selectedID = tasks[next]
+        } else if up {
+            // Above the first task: the habits row, or the day tabs if none.
+            enterHabitRowOrTabs(habits)
+        }
+        // Below the last task: stay put.
+    }
+
+    private func enterHabitRowOrTabs(_ habits: [UUID]) {
+        if habits.isEmpty {
+            goToDayTabs(from: .tasks)
+        } else {
+            enterHabitRow(habits)
+        }
+    }
+
+    private func enterHabitRow(_ habits: [UUID]) {
+        let target = (lastHabitID.flatMap { habits.contains($0) ? $0 : nil }) ?? habits.first
+        selectedID = target
+        lastHabitID = target
+    }
+
+    /// Left/Right. In the This Week column, Right moves to Tasks. In the Tasks
+    /// column on a task row, Left moves back to This Week. On the habits row,
+    /// Left/Right move between the habit chips, and Left past the first habit
+    /// exits to the This Week column. On the day tabs, switch the active day.
     func navigateHorizontal(right: Bool) {
         switch region {
         case .dayTabs:
@@ -565,6 +627,24 @@ final class WeekStore: ObservableObject {
         case .thisWeek:
             if right { focusColumn(.tasks) }
         case .tasks:
+            navigateTasksHorizontal(right: right)
+        }
+    }
+
+    private func navigateTasksHorizontal(right: Bool) {
+        let habits = activeDayHabitIDs
+        if let current = selectedID, let idx = habits.firstIndex(of: current) {
+            // On the habits row: move between chips, exit left past the first.
+            let next = right ? idx + 1 : idx - 1
+            if habits.indices.contains(next) {
+                selectedID = habits[next]
+                lastHabitID = habits[next]
+            } else if !right {
+                focusColumn(.thisWeek)
+            }
+            // Right past the last habit: nothing (Tasks is the rightmost column).
+        } else {
+            // On a task row: Left returns to This Week.
             if !right { focusColumn(.thisWeek) }
         }
     }

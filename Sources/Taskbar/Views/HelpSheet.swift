@@ -7,6 +7,7 @@ struct HelpSheet: View {
     private let shortcuts: [(String, String)] = [
         ("↑ / ↓", "Move within a column; Up from the top jumps to the day tabs"),
         ("← / →", "Move between the This Week and Tasks columns"),
+        ("On the habits row: ← / →", "Move between habit checkboxes"),
         ("On day tabs: ← / →", "Switch the active day (Down returns to the column)"),
         ("Tab / ⇧Tab", "Cycle region: Day tabs → This Week → Tasks"),
         ("⇧← / ⇧→", "Move the selected task across days (This Week ↔ Mon…Sun)"),

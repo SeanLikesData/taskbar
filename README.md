@@ -39,6 +39,7 @@ empty; it is not part of the template.
 | --- | --- |
 | Up / Down | Move within a column; Up from the top task jumps to the day tabs |
 | Left / Right | Move between the This Week and Tasks columns |
+| Left / Right (on the habits row) | Move between habit checkboxes |
 | Left / Right (on day tabs) | Switch the active day; Down returns to the column |
 | Tab / Shift-Tab | Cycle region: Day tabs, This Week, Tasks |
 | Shift-Left / Shift-Right | Move the selected task across days (This Week ↔ Mon…Sun) |
