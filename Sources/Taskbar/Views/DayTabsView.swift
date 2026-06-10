@@ -32,20 +32,6 @@ struct DayTabsView: View {
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(Style.secondaryText)
             }
-
-            Menu {
-                Button("Mark all done") { store.markAllTasksDone(day, done: true) }
-                Button("Uncheck all") { store.markAllTasksDone(day, done: false) }
-            } label: {
-                Image(systemName: "ellipsis")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(Style.mutedText)
-                    .frame(width: 16, height: 16)
-                    .contentShape(Rectangle())
-            }
-            .menuStyle(.borderlessButton)
-            .menuIndicator(.hidden)
-            .fixedSize()
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 9)

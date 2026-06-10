@@ -725,17 +725,6 @@ final class WeekStore: ObservableObject {
         }
     }
 
-    /// Mark every task in a day done or not done (used by the day-tab menu).
-    func markAllTasksDone(_ weekday: Weekday, done: Bool) {
-        withCurrentWeek { week in
-            if let d = week.days.firstIndex(where: { $0.weekday == weekday }) {
-                for i in week.days[d].tasks.indices {
-                    week.days[d].tasks[i].done = done
-                }
-            }
-        }
-    }
-
     /// Count of completed tasks (not habits) for a day tab badge.
     func completedTaskCount(_ weekday: Weekday) -> Int {
         guard let week = currentWeek else { return 0 }
