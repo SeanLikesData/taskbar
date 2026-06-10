@@ -25,13 +25,22 @@ extension WeekStore {
         let shift = flags.contains(.shift)
         let command = flags.contains(.command)
 
-        // While editing a title, only Enter (commit) and Escape (cancel) are
-        // ours; every other key belongs to the text field.
+        // While editing a title: Enter commits; Up/Down commit and then move to
+        // the adjacent task; Escape cancels. Every other key (including Left and
+        // Right, which move the text cursor) belongs to the text field.
         if editingID != nil {
             switch code {
             case Key.returnKey, Key.keypadEnter:
-                // The text field's onSubmit commits; let it through.
-                return event
+                commitEditing()
+                return nil
+            case Key.up:
+                commitEditing()
+                navigateVertical(up: true)
+                return nil
+            case Key.down:
+                commitEditing()
+                navigateVertical(up: false)
+                return nil
             case Key.escape:
                 cancelEditing()
                 return nil

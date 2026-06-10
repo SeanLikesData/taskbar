@@ -47,13 +47,14 @@ struct ThisWeekPanel: View {
             isSelected: store.region == .thisWeek && store.selectedID == item.id,
             isEditing: store.editingID == item.id,
             showMenu: showMenu,
+            draft: $store.draftText,
             onToggle: { store.toggleDone(item.id) },
             onSelect: {
                 store.region = .thisWeek
                 store.selectedID = item.id
             },
             onBeginEdit: { store.beginEditing(item.id) },
-            onCommit: { store.commitEditing($0) },
+            onCommit: { store.commitEditing() },
             onDelete: {
                 store.selectedID = item.id
                 store.deleteSelected()

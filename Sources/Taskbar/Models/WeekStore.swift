@@ -49,6 +49,8 @@ final class WeekStore: ObservableObject {
     @Published var region: Region = .thisWeek
     @Published var selectedID: UUID?
     @Published var editingID: UUID?
+    /// The in-progress edit text for the row being renamed.
+    @Published var draftText: String = ""
 
     @Published var activeSheet: ActiveSheet?
     @Published private(set) var saveState: SaveState = .saved
@@ -322,6 +324,17 @@ final class WeekStore: ObservableObject {
         selectedID = id
         editingID = id
         newItemID = isNew ? id : nil
+        draftText = currentTitle(of: id) ?? ""
+    }
+
+    private func currentTitle(of id: UUID) -> String? {
+        guard let location = locate(id), let week = currentWeek else { return nil }
+        switch location {
+        case .bigThree(let i): return week.bigThree[i].title
+        case .weekTask(let i): return week.weekTasks[i].title
+        case .dayTask(let day, let i): return week.day(day).tasks[i].title
+        case .habit(let day, let i): return week.day(day).habits[i].title
+        }
     }
 
     /// Begin renaming the currently selected item, if it is renameable.
@@ -330,11 +343,12 @@ final class WeekStore: ObservableObject {
         beginEditing(id, isNew: false)
     }
 
-    func commitEditing(_ finalText: String) {
+    /// Accept the in-progress edit (from the field's draft text). A brand-new
+    /// task left empty is discarded.
+    func commitEditing() {
         guard let id = editingID else { return }
-        let trimmed = finalText.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmed = draftText.trimmingCharacters(in: .whitespacesAndNewlines)
         setTitle(id, trimmed)
-        // A brand-new task left empty is discarded.
         if id == newItemID, trimmed.isEmpty {
             delete(id)
         }

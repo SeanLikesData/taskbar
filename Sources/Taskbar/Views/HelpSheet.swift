@@ -14,6 +14,7 @@ struct HelpSheet: View {
         ("⇧↑ / ⇧↓", "Reorder the selected task within its list"),
         ("Space", "Toggle the selected task or habit complete"),
         ("Return or R", "Rename the selected task (double-click also works)"),
+        ("While editing: ↑ / ↓", "Accept the text and move to the task above/below"),
         ("W", "New This Week task"),
         ("N", "New task in the selected day"),
         ("Delete", "Delete the selected task (clears a Big Three slot)"),

@@ -17,15 +17,18 @@ struct TaskRow: View {
     var isEditing: Bool
     var showMenu: Bool = true
     var dimWhenEmpty: Bool = false
+    /// The shared in-progress edit text, held by the store so a commit can be
+    /// triggered from the keyboard handler (Enter, or arrow-away) as well as
+    /// from this field.
+    var draft: Binding<String>
 
     var onToggle: () -> Void = {}
     var onSelect: () -> Void = {}
     var onBeginEdit: () -> Void = {}
-    var onCommit: (String) -> Void = { _ in }
+    var onCommit: () -> Void = {}
     var onDelete: () -> Void = {}
     var onMove: (Int) -> Void = { _ in } // 0 = This Week, 1...7 = Mon...Sun
 
-    @State private var text: String = ""
     @FocusState private var fieldFocused: Bool
 
     private var isEmpty: Bool { item.title.isEmpty }
@@ -38,14 +41,14 @@ struct TaskRow: View {
             .buttonStyle(.plain)
 
             if isEditing {
-                TextField(placeholder, text: $text)
+                TextField(placeholder, text: draft)
                     .textFieldStyle(.plain)
                     .font(.system(size: 14))
                     .foregroundColor(Style.primaryText)
                     .focused($fieldFocused)
-                    .onSubmit { commit() }
+                    .onSubmit { onCommit() }
                     .onChange(of: fieldFocused) { _, focused in
-                        if !focused { commit() }
+                        if !focused { onCommit() }
                     }
             } else {
                 Text(isEmpty ? placeholder : item.title)
@@ -73,16 +76,10 @@ struct TaskRow: View {
         .onTapGesture(count: 2) { onBeginEdit() }
         .onTapGesture(count: 1) { onSelect() }
         .onChange(of: isEditing) { _, editing in
-            if editing {
-                text = item.title
-                fieldFocused = true
-            }
+            if editing { fieldFocused = true }
         }
         .onAppear {
-            if isEditing {
-                text = item.title
-                fieldFocused = true
-            }
+            if isEditing { fieldFocused = true }
         }
     }
 
@@ -90,10 +87,6 @@ struct TaskRow: View {
         if isEmpty { return Style.mutedText }
         if item.done { return Style.secondaryText }
         return Style.primaryText
-    }
-
-    private func commit() {
-        onCommit(text)
     }
 
     private var overflowMenu: some View {
