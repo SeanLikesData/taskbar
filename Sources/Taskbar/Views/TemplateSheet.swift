@@ -131,18 +131,13 @@ struct TemplateSheet: View {
     }
 
     private func dayTab(_ day: Weekday) -> some View {
-        let count = dayTasks[day.rawValue]?.count ?? 0
         let isActive = selectedDay == day
-        return HStack(spacing: 5) {
-            Text(day.shortLabel)
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundColor(isActive ? Style.primaryText : Style.secondaryText)
-            Text("\(count)")
-                .font(.system(size: 11, weight: .semibold))
-                .foregroundColor(Style.mutedText)
-        }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 7)
+        return Text(String(day.shortLabel.prefix(1)))
+            .font(.system(size: 13, weight: .semibold))
+            .foregroundColor(isActive ? Style.primaryText : Style.secondaryText)
+            .frame(minWidth: 16)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 7)
         .background(
             RoundedRectangle(cornerRadius: 8, style: .continuous)
                 .fill(isActive ? Style.selectionFill : Style.rowFill)
