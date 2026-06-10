@@ -5,9 +5,10 @@ struct HelpSheet: View {
     @EnvironmentObject var store: WeekStore
 
     private let shortcuts: [(String, String)] = [
-        ("↑ / ↓", "Move selection within a list"),
-        ("Tab / ⇧Tab", "Switch region: Day tabs → This Week → Tasks"),
-        ("← / →", "Switch the active day"),
+        ("↑ / ↓", "Move within a column; Up from the top jumps to the day tabs"),
+        ("← / →", "Move between the This Week and Tasks columns"),
+        ("On day tabs: ← / →", "Switch the active day (Down returns to the column)"),
+        ("Tab / ⇧Tab", "Cycle region: Day tabs → This Week → Tasks"),
         ("⇧← / ⇧→", "Move the selected task across days (This Week ↔ Mon…Sun)"),
         ("⇧↑ / ⇧↓", "Reorder the selected task within its list"),
         ("Space", "Toggle the selected task or habit complete"),

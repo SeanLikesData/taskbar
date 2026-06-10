@@ -56,6 +56,12 @@ final class WeekStore: ObservableObject {
     /// Tracks a freshly created task so an empty title on commit removes it.
     private var newItemID: UUID?
 
+    /// Remembers the last selected row in each column so moving away and back
+    /// (to the other column or up to the day tabs) restores the position.
+    private var lastSelection: [Region: UUID] = [:]
+    /// The column to drop back into when leaving the day tabs with Down.
+    private var returnColumn: Region = .tasks
+
     /// Closure the AppDelegate sets so Escape can close the popover.
     var onRequestClose: (() -> Void)?
 
@@ -524,16 +530,73 @@ final class WeekStore: ObservableObject {
         selectedID = orderedIDs(for: .thisWeek).first
     }
 
-    func moveSelection(up: Bool) {
-        let order = orderedIDs(for: region)
-        guard !order.isEmpty else { return }
-        guard let current = selectedID, let idx = order.firstIndex(of: current) else {
-            selectedID = order.first
-            return
+    /// Up/Down. Within a column, move the selection one row. Pressing Up at the
+    /// top of a column jumps to the day tabs; pressing Down on the day tabs
+    /// drops back into the column you came from.
+    func navigateVertical(up: Bool) {
+        switch region {
+        case .dayTabs:
+            if !up { returnFromDayTabs() }
+        case .thisWeek, .tasks:
+            let order = orderedIDs(for: region)
+            guard !order.isEmpty else {
+                if up { goToDayTabs(from: region) }
+                return
+            }
+            guard let current = selectedID, let idx = order.firstIndex(of: current) else {
+                selectedID = order.first
+                return
+            }
+            let next = up ? idx - 1 : idx + 1
+            if order.indices.contains(next) {
+                selectedID = order[next]
+            } else if up {
+                goToDayTabs(from: region)
+            }
         }
-        let next = up ? idx - 1 : idx + 1
-        guard order.indices.contains(next) else { return }
-        selectedID = order[next]
+    }
+
+    /// Left/Right. In a column, move between the This Week and Tasks columns. On
+    /// the day tabs, switch the active day.
+    func navigateHorizontal(right: Bool) {
+        switch region {
+        case .dayTabs:
+            switchDay(forward: right)
+        case .thisWeek:
+            if right { focusColumn(.tasks) }
+        case .tasks:
+            if !right { focusColumn(.thisWeek) }
+        }
+    }
+
+    private func focusColumn(_ target: Region) {
+        if region == .thisWeek || region == .tasks {
+            lastSelection[region] = selectedID
+        }
+        region = target
+        restoreSelection(in: target)
+    }
+
+    private func goToDayTabs(from column: Region) {
+        lastSelection[column] = selectedID
+        returnColumn = column
+        region = .dayTabs
+    }
+
+    private func returnFromDayTabs() {
+        region = returnColumn
+        restoreSelection(in: returnColumn)
+    }
+
+    /// Select the remembered row for a column, or its first row if that row no
+    /// longer exists (for example after switching days).
+    private func restoreSelection(in column: Region) {
+        let order = orderedIDs(for: column)
+        if let saved = lastSelection[column], order.contains(saved) {
+            selectedID = saved
+        } else {
+            selectedID = order.first
+        }
     }
 
     func cycleRegion(forward: Bool) {

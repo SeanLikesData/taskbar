@@ -59,16 +59,16 @@ extension WeekStore {
         // Plain navigation and actions.
         switch code {
         case Key.up:
-            if shift { reorderSelected(up: true) } else { moveSelection(up: true) }
+            if shift { reorderSelected(up: true) } else { navigateVertical(up: true) }
             return nil
         case Key.down:
-            if shift { reorderSelected(up: false) } else { moveSelection(up: false) }
+            if shift { reorderSelected(up: false) } else { navigateVertical(up: false) }
             return nil
         case Key.left:
-            if shift { moveSelectedAlongChain(forward: false) } else { switchDay(forward: false) }
+            if shift { moveSelectedAlongChain(forward: false) } else { navigateHorizontal(right: false) }
             return nil
         case Key.right:
-            if shift { moveSelectedAlongChain(forward: true) } else { switchDay(forward: true) }
+            if shift { moveSelectedAlongChain(forward: true) } else { navigateHorizontal(right: true) }
             return nil
         case Key.tab:
             cycleRegion(forward: !shift)
