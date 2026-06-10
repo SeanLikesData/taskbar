@@ -49,8 +49,13 @@ extension WeekStore {
             }
         }
 
-        // A sheet (template, settings, help) owns its own keys.
+        // A sheet (weeks, template, settings, help) owns its own keys, except
+        // Escape, which closes it.
         if activeSheet != nil {
+            if code == Key.escape {
+                activeSheet = nil
+                return nil
+            }
             return event
         }
 

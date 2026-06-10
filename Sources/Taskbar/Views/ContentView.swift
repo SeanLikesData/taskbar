@@ -8,7 +8,6 @@ struct ContentView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            TopBar()
             DayTabsView()
 
             Rectangle()
@@ -48,6 +47,8 @@ struct ContentView: View {
         .preferredColorScheme(.dark)
         .sheet(item: $store.activeSheet) { sheet in
             switch sheet {
+            case .weeks:
+                WeeksSheet().environmentObject(store)
             case .template:
                 TemplateSheet().environmentObject(store)
             case .settings:

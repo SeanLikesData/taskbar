@@ -10,17 +10,27 @@ add and rename tasks, and move tasks between days without touching the mouse.
 
 ## Layout
 
-- **Top bar:** a week picker showing the week and its `done/total` completion
-  count, a **New Week** button, and a delete-week button.
-- **Day tabs:** Monday through Sunday. The active day drives the Tasks panel.
-  Each tab shows the number of completed tasks for that day.
+- **Day tabs (top):** Monday through Sunday. The active day drives the Tasks
+  panel. Each tab shows the number of completed tasks for that day.
 - **This Week (left panel):** the per-week **Big Three** slots, plus undated
   tasks for the week. Create a task here when there is no specific day to do it
   on, then push it into a day later.
 - **Tasks (right panel):** the active day's habit checkboxes (one set per day,
   completed independently each day) followed by that day's tasks.
-- **Bottom bar:** saved-week count, save status, and buttons for the Template
-  editor, keyboard help, and settings.
+- **Bottom bar:** a week pill showing the current week and its `done/total`
+  completion count (tap it to open the Weeks panel), a **New Week** button,
+  save status, and buttons for the Template editor, keyboard help, and settings.
+
+## Weeks panel
+
+Tap the week pill in the bottom bar to manage every saved week in one place:
+
+- The current week is marked. Click any week to switch to it.
+- Each week has its own trash button for instant deletion.
+- **Delete all weeks** clears everything and starts a fresh current week.
+
+There is always at least one week — deleting the last one recreates the current
+calendar week.
 
 ## Weekly Template
 

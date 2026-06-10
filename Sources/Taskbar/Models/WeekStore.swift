@@ -11,14 +11,16 @@ enum Region: Int {
 
 /// Which modal sheet, if any, is open over the main content.
 enum ActiveSheet: Identifiable {
+    case weeks
     case template
     case settings
     case help
     var id: Int {
         switch self {
-        case .template: return 0
-        case .settings: return 1
-        case .help: return 2
+        case .weeks: return 0
+        case .template: return 1
+        case .settings: return 2
+        case .help: return 3
         }
     }
 }
@@ -141,8 +143,6 @@ final class WeekStore: ObservableObject {
         data.weeks.first { $0.id == selectedWeekID }
     }
 
-    var savedWeekCount: Int { data.weeks.count }
-
     var template: Template { data.template }
 
     /// Index of the selected week within the chronological list, for the picker.
@@ -154,22 +154,16 @@ final class WeekStore: ObservableObject {
 
     // MARK: - Week navigation and management
 
-    func selectPreviousWeek() {
-        let sorted = weeksSorted
-        guard let idx = sorted.firstIndex(where: { $0.id == selectedWeekID }), idx > 0 else { return }
-        selectWeek(sorted[idx - 1])
-    }
-
-    func selectNextWeek() {
-        let sorted = weeksSorted
-        guard let idx = sorted.firstIndex(where: { $0.id == selectedWeekID }), idx < sorted.count - 1 else { return }
-        selectWeek(sorted[idx + 1])
-    }
-
     private func selectWeek(_ week: Week) {
         selectedWeekID = week.id
         activeDay = .monday
         selectDefaultFocus()
+    }
+
+    /// Switch to a week by id (used by the Weeks panel).
+    func openWeek(_ id: UUID) {
+        guard let week = data.weeks.first(where: { $0.id == id }) else { return }
+        selectWeek(week)
     }
 
     /// Create the week after the latest saved week, seeded from the template.
@@ -192,29 +186,34 @@ final class WeekStore: ObservableObject {
         scheduleSave()
     }
 
-    /// Delete the currently selected week and select a neighbor.
-    func deleteCurrentWeek() {
+    /// Delete a specific week by id. If it was the selected week, a neighbor is
+    /// selected. If it was the last remaining week, the current calendar week is
+    /// recreated so there is always at least one week.
+    func deleteWeek(_ id: UUID) {
         let sorted = weeksSorted
-        guard sorted.count > 1, let idx = sorted.firstIndex(where: { $0.id == selectedWeekID }) else {
-            // Refuse to delete the only week; just clear it instead.
-            if let only = currentWeek {
-                let fresh = seededWeek(monday: only.weekStart)
-                replaceCurrentWeek(with: fresh)
-            }
-            return
+        guard let idx = sorted.firstIndex(where: { $0.id == id }) else { return }
+        let wasSelected = (id == selectedWeekID)
+        data.weeks.removeAll { $0.id == id }
+
+        if data.weeks.isEmpty {
+            let monday = WeekMath.mondayOfWeek(containing: Date())
+            let week = seededWeek(monday: monday)
+            data.weeks.append(week)
+            selectWeek(week)
+        } else if wasSelected {
+            let newSorted = weeksSorted
+            selectWeek(newSorted[min(idx, newSorted.count - 1)])
         }
-        data.weeks.removeAll { $0.id == selectedWeekID }
-        let newSorted = weeksSorted
-        let neighbor = newSorted[min(idx, newSorted.count - 1)]
-        selectWeek(neighbor)
         scheduleSave()
     }
 
-    private func replaceCurrentWeek(with week: Week) {
-        guard let i = data.weeks.firstIndex(where: { $0.id == selectedWeekID }) else { return }
-        var replacement = week
-        replacement.id = selectedWeekID
-        data.weeks[i] = replacement
+    /// Remove every week and recreate the current calendar week.
+    func deleteAllWeeks() {
+        data.weeks.removeAll()
+        let monday = WeekMath.mondayOfWeek(containing: Date())
+        let week = seededWeek(monday: monday)
+        data.weeks.append(week)
+        selectWeek(week)
         scheduleSave()
     }
 

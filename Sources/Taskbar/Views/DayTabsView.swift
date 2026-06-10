@@ -13,6 +13,7 @@ struct DayTabsView: View {
             }
         }
         .padding(.horizontal, 20)
+        .padding(.top, 18)
         .padding(.bottom, 12)
     }
 
