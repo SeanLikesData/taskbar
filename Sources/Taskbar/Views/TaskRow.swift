@@ -76,11 +76,19 @@ struct TaskRow: View {
         .onTapGesture(count: 2) { onBeginEdit() }
         .onTapGesture(count: 1) { onSelect() }
         .onChange(of: isEditing) { _, editing in
-            if editing { fieldFocused = true }
+            if editing { focusField() }
         }
         .onAppear {
-            if isEditing { fieldFocused = true }
+            if isEditing { focusField() }
         }
+    }
+
+    /// Request keyboard focus on the next runloop tick. Setting focus in the
+    /// same update pass that inserts the field is unreliable in a borderless
+    /// panel — when renaming an already-visible row the request gets dropped —
+    /// so defer it until the field is installed.
+    private func focusField() {
+        DispatchQueue.main.async { fieldFocused = true }
     }
 
     private var titleColor: Color {
