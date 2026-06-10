@@ -33,6 +33,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var defaultsObserver: NSObjectProtocol?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // Default to staying open and floating above other windows; the user
+        // can turn this off in Settings.
+        UserDefaults.standard.register(defaults: [SettingsKey.pinned: true])
+
         if let button = statusItem.button {
             button.image = StatusIcon.taskbar
             button.action = #selector(togglePopover)
