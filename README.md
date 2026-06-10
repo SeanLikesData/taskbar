@@ -1,12 +1,26 @@
 # Taskbar
 
 Taskbar is a local macOS menu bar application for planning a week of tasks,
-built with SwiftUI. It is styled after Notebloat: a compact dark glass popover
-that opens from the menu bar, saves to a local JSON file, and shows no Dock
-icon.
+built with SwiftUI. It is a compact dark glass popover that opens from the menu
+bar, saves to a local JSON file, and shows no Dock icon.
 
 It is fully keyboard navigable — you can move between every task, switch days,
 add and rename tasks, and move tasks between days without touching the mouse.
+
+## Screenshots
+
+The weekly view: day tabs across the top, the undated **This Week** list and
+**Big Three** on the left, and the selected day's habits and tasks on the right.
+
+![Taskbar weekly view](docs/screenshots/main.png)
+
+The **Weekly Template** seeds every new week with recurring habits and tasks:
+
+![Weekly Template editor](docs/screenshots/template.png)
+
+The **Weeks** panel lists every saved week for quick switching and bulk deletion:
+
+![Weeks management panel](docs/screenshots/weeks.png)
 
 ## Layout
 
