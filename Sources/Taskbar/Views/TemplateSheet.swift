@@ -36,7 +36,7 @@ struct TemplateSheet: View {
                 .padding(24)
             }
         }
-        .frame(width: 760, height: 580)
+        .frame(width: 780, height: 660)
         .background(
             ZStack {
                 VisualEffectView(material: .hudWindow)
